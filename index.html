@@ -26,14 +26,39 @@ h2{margin:0 0 14px;font-size:23px}
 .detail h3{margin:0 0 4px;font-size:20px}.detail p{white-space:pre-wrap;margin:14px 0}
 .btn{display:inline-block;background:var(--main);color:var(--on);text-decoration:none;padding:12px 18px;border-radius:10px}
 .empty{text-align:center;color:var(--sub);padding:40px 0}
+.link{background:none;border:0;color:var(--main);font:inherit;text-decoration:underline;display:block;margin:20px auto 0;cursor:pointer;padding:10px}
+.tabs{display:flex;gap:8px;margin-bottom:14px}.tab{flex:1;padding:14px 8px;border:1px solid var(--line);border-radius:12px;background:var(--card);font:inherit;color:inherit;cursor:pointer}
+.tab.on{background:var(--main);color:var(--on);border-color:var(--main)}
+.steps{padding-left:24px;margin:8px 0}.steps li{margin-bottom:12px}
+.note{border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:15px;color:var(--sub);margin-top:14px}
+.btn{border:0;font:inherit;cursor:pointer}
 </style></head><body><div class="wrap" id="app"></div>
 <script src="data.js"></script>
 <script>
 var S={jubo:{n:"주보",i:"📖",s:"이번 주 주보",p:JUBO},sedo:{n:"성서일과",i:"✝️",s:"주일 말씀 본문",p:SEDO},edu:{n:"성서교육",i:"🌱",s:"새신자 교육 및 공부 자료",p:EDU}};
 var app=document.getElementById("app");
 function e(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+var isApp=matchMedia("(display-mode: standalone)").matches||navigator.standalone;
+var dp=null,tab=/iPhone|iPad|iPod/.test(navigator.userAgent)?"i":"a";
+addEventListener("beforeinstallprompt",function(ev){ev.preventDefault();dp=ev;if(location.hash==="#install")render()});
+function setTab(t){tab=t;render()}
+function doInstall(){if(dp){dp.prompt();dp=null}}
+function steps(a){return '<ol class="steps">'+a.map(function(x){return '<li>'+x+'</li>'}).join("")+'</ol>'}
+function installPage(){
+var o='<div class="top"><button class="back" onclick="location.hash=\'\'">← 처음</button></div><h2>📲 앱처럼 설치하기</h2>';
+o+='<p>한 번만 설치하면 휴대폰 첫 화면에 소망교회 아이콘이 생겨서, 누르면 바로 열립니다. 설치는 무료입니다.</p>';
+o+='<div class="tabs"><button class="tab'+(tab==="a"?" on":"")+'" onclick="setTab(\'a\')">안드로이드 (갤럭시 등)</button><button class="tab'+(tab==="i"?" on":"")+'" onclick="setTab(\'i\')">아이폰</button></div><div class="detail">';
+if(tab==="a"){
+if(dp)o+='<p><button class="btn" onclick="doInstall()">지금 설치하기</button></p><p>위 버튼이 안 되면 아래 순서대로 해 주세요.</p>';
+o+=steps(["<b>크롬</b> 앱으로 이 주소를 엽니다.","오른쪽 위의 <b>⋮</b> (점 세 개)를 누릅니다.","<b>홈 화면에 추가</b> 또는 <b>앱 설치</b>를 누릅니다.","나오는 창에서 <b>추가</b> (또는 설치)를 누르면 끝입니다."]);
+o+='<div class="note">카카오톡 안에서 링크를 열었다면 화면 오른쪽 위 메뉴에서 "다른 브라우저로 열기"를 눌러 크롬으로 먼저 여세요.</div>';
+}else{
+o+=steps(["반드시 <b>사파리(Safari)</b> 앱으로 이 주소를 엽니다.","화면 아래의 <b>공유 버튼</b> (네모에서 화살표가 위로 나온 모양)을 누릅니다.","메뉴를 위로 밀어 <b>홈 화면에 추가</b>를 누릅니다.","오른쪽 위의 <b>추가</b>를 누르면 끝입니다."]);
+o+='<div class="note">카카오톡 안에서 링크를 열었다면 오른쪽 아래의 나침반 모양(또는 ⋯ 메뉴)에서 "Safari로 열기"를 눌러 먼저 사파리로 여세요. 크롬 등 다른 브라우저에서는 안 될 수 있습니다.</div>';
+}
+return o+'</div><div class="note">설치한 뒤에는 첫 화면의 소망교회 아이콘을 누르시면 됩니다. 새 주보가 올라오면 자동으로 최신 내용이 보입니다.</div>';}
 function render(){var q=(location.hash||"").slice(1).split("-"),c=S[q[0]],o="";
-if(!c){o='<header><small>기독교대한감리회</small><h1>소망교회</h1></header>';for(var k in S)o+='<button class="tile" onclick="location.hash=\''+k+'\'"><div class="ic">'+S[k].i+'</div><div><b>'+S[k].n+'</b><span>'+S[k].s+'</span></div></button>';}
+if(q[0]==='install'){o=installPage()}else if(!c){o='<header><small>기독교대한감리회</small><h1>소망교회</h1></header>';for(var k in S)o+='<button class="tile" onclick="location.hash=\''+k+'\'"><div class="ic">'+S[k].i+'</div><div><b>'+S[k].n+'</b><span>'+S[k].s+'</span></div></button>';if(!isApp)o+='<button class="link" onclick="location.hash=\'install\'">📲 앱처럼 설치하는 방법</button>';}
 else if(q[1]===undefined){o='<div class="top"><button class="back" onclick="location.hash=\'\'">← 처음</button></div><h2>'+c.i+' '+c.n+'</h2>';
 if(!c.p.length)o+='<div class="empty">아직 올라온 글이 없습니다.</div>';
 c.p.forEach(function(x,i){o+='<button class="post" onclick="location.hash=\''+q[0]+'-'+i+'\'"><b>'+e(x.t)+'</b><span>'+e(x.d)+'</span></button>'});}
